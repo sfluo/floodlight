@@ -170,15 +170,15 @@ public class ResourceTracker implements IOFMessageListener, IFloodlightModule {
                 break;
         }
 
-        int mb = 1024*1024;
+        int kb = 1024;
 
         //Getting the runtime reference from system
         Runtime runtime = Runtime.getRuntime();
-        logger.info("#FC### Heap utilization statistics [MB] #####");
-        logger.info("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / mb);
-        logger.info("Free Memory:" + runtime.freeMemory() / mb);
-        logger.info("Total Memory:" + runtime.totalMemory() / mb);
-        logger.info("Max Memory:" + runtime.maxMemory() / mb);
+        logger.info("#FC### Heap utilization statistics [KB] #####");
+        logger.info("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / kb);
+        logger.info("Free Memory:" + runtime.freeMemory() / kb);
+        logger.info("Total Memory:" + runtime.totalMemory() / kb);
+        logger.info("Max Memory:" + runtime.maxMemory() / kb);
 
         return Command.CONTINUE;
     }
