@@ -96,42 +96,42 @@ public class MemTracker implements IOFMessageListener, IFloodlightModule {
     @Override
     public Command receive(IOFSwitch sw, OFMessage msg, FloodlightContext cntx) {
         
+                try {
         Ethernet eth =
                 IFloodlightProviderService.bcStore.get(cntx,
                                             IFloodlightProviderService.CONTEXT_PI_PAYLOAD);
  
-        Long sourceMACHash = eth.getSourceMACAddress().getLong();
-        logger.info("MAC Address: {} seen on switch: {}",
-                    eth.getSourceMACAddress().toString(),
-                    sw.getId().toString());
+        //logger.info("MAC Address: {} seen on switch: {}",
+        //            eth.getSourceMACAddress().toString(),
+        //           sw.getId().toString());
   
          switch (msg.getType()) {
             case PACKET_IN:
-                logger.info("#FC### PACKET_IN ");
+
                 if (eth.getEtherType() == EthType.IPv4) {
                     IPv4 ip = (IPv4) eth.getPayload();
                     IPv4Address srcIp = ip.getSourceAddress();
                     IPv4Address dstIp = ip.getDestinationAddress();
                     
-                    logger.info("#FC### IPv4 src IP " + ((srcIp != null) ? srcIp.toString() : "")
+                    logger.info("PACKET-IN IPv4 src IP " + ((srcIp != null) ? srcIp.toString() : "")
                         + ", dst IP " + ((dstIp != null) ? dstIp.toString() : "")
-                        + ", fragment" + (ip.isFragment() ? ip.getFragmentOffset() : 0)
-                        + ", len ", ip.getTotalLength());
+                        + ", fragment " + (ip.isFragment() ? ip.getFragmentOffset() : 0)
+                        + ", len " + ip.getTotalLength());
                 
-                    if (ip.getProtocol().equals(IpProtocol.TCP)) {
-                        TCP tcp = (TCP) ip.getPayload();
-                        logger.info("TCP: src port" + (short)tcp.getSourcePort().getPort()
-                            + ", dst port " + (short)tcp.getDestinationPort().getPort()
-                            + ", seq " + tcp.getSequence()
-                            + ", ack " + tcp.getAcknowledge());
+                    //if (ip.getProtocol().equals(IpProtocol.TCP)) {
+                    //    TCP tcp = (TCP) ip.getPayload();
+                     //   logger.info("TCP: src port" + (short)tcp.getSourcePort().getPort()
+                      //      + ", dst port " + (short)tcp.getDestinationPort().getPort()
+                       //     + ", seq " + tcp.getSequence()
+                        //    + ", ack " + tcp.getAcknowledge());
 
-                    } else if (ip.getProtocol().equals(IpProtocol.UDP)) {
-                        UDP udp = (UDP) ip.getPayload();
-                
-                        logger.info("UDP: src port" + (short)udp.getSourcePort().getPort()
-                            + ", dst port " + (short)udp.getDestinationPort().getPort()
-                            + ", len " + udp.getLength());
-                    }
+                   // } else if (ip.getProtocol().equals(IpProtocol.UDP)) {
+                //        UDP udp = (UDP) ip.getPayload();
+               // 
+                 //       logger.info("UDP: src port" + (short)udp.getSourcePort().getPort()
+                  //          + ", dst port " + (short)udp.getDestinationPort().getPort()
+                   //         + ", len " + udp.getLength());
+                    //}
                 } else if (eth.getEtherType() == EthType.ARP) { /* shallow check for equality is okay for EthType */
                     logger.info("#FC### ARP packet received.");
                 } else if (eth.getEtherType() == EthType.IPv6) {
@@ -139,7 +139,7 @@ public class MemTracker implements IOFMessageListener, IFloodlightModule {
                     IPv6Address srcIp = ip.getSourceAddress();
                     IPv6Address dstIp = ip.getDestinationAddress();
                     
-                    logger.info("#FC### IPv6 src IP " + ((srcIp != null) ? srcIp.toString() : "null")
+                    logger.info("PACKET-IN IPv6 src IP " + ((srcIp != null) ? srcIp.toString() : "null")
                         + ", dst IP " + ((dstIp != null) ? dstIp.toString() : "null"));
 
                     if (ip.getNextHeader().equals(IpProtocol.TCP)) {
@@ -158,6 +158,7 @@ public class MemTracker implements IOFMessageListener, IFloodlightModule {
                 }
                 break;
             case FLOW_REMOVED:
+                logger.info("#FC### FLOW_REMOVED ");
                 try {
                     OFFlowRemoved flowRemoved = (OFFlowRemoved) msg;
                     IPv4Address ip = flowRemoved.getMatch().get(MatchField.IPV4_SRC);
@@ -170,17 +171,17 @@ public class MemTracker implements IOFMessageListener, IFloodlightModule {
                 logger.info("#FC### unknown packet type {}", msg.getType());
                 break;
         }
+        } catch (Exception e) {
+             logger.info("$$$$$$$$$$$");
+        }
 
         int kb = 1024;
 
         //Getting the runtime reference from system
         Runtime runtime = Runtime.getRuntime();
-        logger.info("#FC### Heap utilization statistics [KB] #####");
-        logger.info("Used Memory:" + (runtime.totalMemory() - runtime.freeMemory()) / kb);
-        logger.info("Free Memory:" + runtime.freeMemory() / kb);
-        logger.info("Total Memory:" + runtime.totalMemory() / kb);
-        logger.info("Max Memory:" + runtime.maxMemory() / kb);
-
+        logger.info("Memory Used/Free/Total/MAX :" 
+			+ (runtime.totalMemory() - runtime.freeMemory()) / kb + " KB/ " + runtime.freeMemory() / kb + " KB/"
+        		+ runtime.totalMemory() / kb + " KB/ " + runtime.maxMemory() / kb + " KB"); 
         return Command.CONTINUE;
     }
  
