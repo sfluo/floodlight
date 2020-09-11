@@ -68,6 +68,9 @@ import org.projectfloodlight.openflow.protocol.OFPacketIn;
 import org.projectfloodlight.openflow.protocol.OFPortDesc;
 import org.projectfloodlight.openflow.protocol.OFType;
 import org.projectfloodlight.openflow.types.DatapathId;
+import org.projectfloodlight.openflow.types.EthType;
+import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.packet.IPv6;
 import org.projectfloodlight.openflow.types.IPv4Address;
 import org.projectfloodlight.openflow.types.TransportPort;
 
@@ -446,6 +449,30 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
                     eth.deserialize(pi.getData(), 0, pi.getData().length);
                 }
                 // fall through to default case...
+
+		Runtime runtime = Runtime.getRuntime();
+                log.info("Pushback - Free Memory (KB): " + runtime.freeMemory() / 1024 + " total Memory: " 
+				+ runtime.totalMemory()/ 1024);
+
+                if (eth != null && eth.getEtherType() == EthType.IPv4) {
+                    IPv4 ip = (IPv4) eth.getPayload();
+                    IPv4Address srcIp = ip.getSourceAddress();
+                    IPv4Address dstIp = ip.getDestinationAddress();
+
+                    log.info("#Pushback Controller### IPv4 src IP " + ((srcIp != null) ? srcIp.toString() : "")
+                        + ", dst IP: " + ((dstIp != null) ? dstIp.toString() : "")
+                        + ", fragment: " + (ip.isFragment() ? ip.getFragmentOffset() : 0)
+                        + ", len: ", ip.getTotalLength());
+                } else  if (eth.getEtherType() == EthType.IPv6) {
+		    log.info("Pushback IPv6");
+		}
+
+		double ratio = runtime.freeMemory() / (1.0 * runtime.totalMemory());
+		if (ratio < 0.20) {  // also decrease ratio
+		   log.info("Trigger Memory Protection - usage ratio: " + ratio);
+		   System.gc();
+		   return;
+		}
 
             default:
 
