@@ -462,6 +462,17 @@ public class Controller implements IFloodlightProviderService, IStorageSourceLis
                 }
                 // fall through to default case...
 
+		Runtime runtime = Runtime.getRuntime();
+                log.info("Pushback - Used Memory (KB): " +  (runtime.totalMemory()- runtime.freeMemory())/ 1024 + " total Memory: "
+				+ runtime.totalMemory()/ 1024);
+
+//		double ratio = runtime.freeMemory() / (1.0 * runtime.totalMemory());
+//		if (ratio < 0.20) {  // also decrease ratio
+//		   log.info("Trigger Memory Protection - usage ratio: " + ratio);
+//		   System.gc();
+//		   return;
+//		}
+
             default:
 
                 List<IOFMessageListener> listeners = null;
